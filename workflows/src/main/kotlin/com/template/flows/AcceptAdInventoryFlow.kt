@@ -16,21 +16,21 @@ import net.corda.core.flows.FlowSession
 
 import net.corda.core.identity.Party
 
-import com.template.contracts.TemplateContract
+import com.template.contracts.AdInventoryContract
 
 import net.corda.core.transactions.TransactionBuilder
 
-import com.template.states.TemplateState
 import net.corda.core.contracts.requireThat
 import net.corda.core.identity.AbstractParty
+import java.util.*
 
 
 // *********
 // * Flows *
 // *********
-@InitiatingFlow
+/*@InitiatingFlow
 @StartableByRPC
-class Initiator(private val receiver: Party) : FlowLogic<SignedTransaction>() {
+class AcceptAdInventoryFlow(private val adInventoryId: UUID) : FlowLogic<SignedTransaction>() {
     override val progressTracker = ProgressTracker()
 
     @Suspendable
@@ -48,7 +48,7 @@ class Initiator(private val receiver: Party) : FlowLogic<SignedTransaction>() {
 
         // Step 3. Create a new TransactionBuilder object.
         val builder = TransactionBuilder(notary)
-                .addCommand(TemplateContract.Commands.Create(), listOf(sender.owningKey, receiver.owningKey))
+                .addCommand(AdInventoryContract.Commands.Create(), listOf(sender.owningKey, receiver.owningKey))
                 .addOutputState(output)
 
         // Step 4. Verify and sign it with our KeyPair.
@@ -80,5 +80,5 @@ class Responder(val counterpartySession: FlowSession) : FlowLogic<SignedTransact
         val txId = subFlow(signTransactionFlow).id
         return subFlow(ReceiveFinalityFlow(counterpartySession, expectedTxId = txId))
     }
-}
+}*/
 
