@@ -4,52 +4,59 @@
 
 # Crytpo Arcade - Kotlin
 
-Welcome to the Kotlin CorDapp template. The CorDapp template is a stubbed-out CorDapp that you can use to bootstrap 
-your own CorDapps.
-
-**This is the Kotlin version of the CorDapp template.**
+Welcome to the In-Game Advertising Marketplace, where you can buy spaces within the game to advertise
 
 # Steps to run the project
 
-1 ./gradlew clean deployNodes
+Build the application
+> ./gradlew clean deployNodes
 
-Launch the CorDapp 
+Launch the CorDapp now
 
-2 ./build/nodes/runnodes
+> ./build/nodes/runnodes
+
+> ./build/nodes/runnodes --allow-hibernate-to-manage-app-schema
 * (Since there's an error when using a schema) 
-  * ./build/nodes/runnodes --allow-hibernate-to-manage-app-schema
-  * ISSUE: https://github.com/corda/corda-gradle-plugins/issues/390
+  ISSUE: https://github.com/corda/corda-gradle-plugins/issues/390 *
 
 # Running Flows
-
-flow start ProposeAdvertisementFlow adType: "Banner", adPlacement: "Top", adCost: "1000 USD", adExpiry: "2023-04-21", publisher: "O=PartyA,L=London,C=GB"
 
 run vaultQuery contractStateType: com.template.states.AdInventoryState
 
 
-1st
+
 ## For the Publisher, create Publisher
-flow start CreateNewAccount acctName: EA-SPORTS
-flow start CreateNewAccount acctName: Rockstar-Games
 
-flow start ShareAccountTo acctNameShared: EA-SPORTS, shareTo: advertiser
-flow start ShareAccountTo acctNameShared: Rockstar-Games, shareTo: advertiser
+>flow start CreateNewAccount acctName: EA-SPORTS
+> 
+>flow start CreateNewAccount acctName: Rockstar-Games
 
-##Share above with all the Advertisers
+> flow start ShareAccountTo acctNameShared: EA-SPORTS, shareTo: advertiser
+> 
+> flow start ShareAccountTo acctNameShared: Rockstar-Games, shareTo: advertiser
 
-2nd
+**ShareAccountTo** will share the Publishers accountInfo to all the advertisers
+
+
 ## For the advertisers, create advertisers
-flow start CreateNewAccount acctName: NIKE
-flow start CreateNewAccount acctName: PUMA
 
-flow start ShareAccountTo acctNameShared: NIKE, shareTo: publisher
-flow start ShareAccountTo acctNameShared: PUMA, shareTo: publisher
+>flow start CreateNewAccount acctName: NIKE
+> 
+>flow start CreateNewAccount acctName: PUMA
 
-##Share above with all the publishers
+>flow start ShareAccountTo acctNameShared: NIKE, shareTo: publisher
+> 
+>flow start ShareAccountTo acctNameShared: PUMA, shareTo: publisher
 
-flow start ProposeAdvertisementFlow whoAmI: NIKE, whereTo: EA-SPORTS, adType: "Banner", adPlacement: "Top", adCost: "1000 USD", adExpiry: "2023-04-21"
-
-flow start ViewInboxByAccount acctname: EA-SPORTS
+**ShareAccountTo** will share the Advertisers accountInfo to all the publishers
 
 
-# Usage
+## The Advertiser proposes an advertisment to the publisher
+
+>flow start ProposeAdvertisementFlow whoAmI: NIKE, whereTo: EA-SPORTS, adType: "Banner", adPlacement: "Top", adCost: "1000 USD", adExpiry: "2023-04-21"
+
+
+>flow start ViewInboxByAccount acctname: EA-SPORTS
+- Use ViewInboxByAccount to view any proposal made by advertisers -> for publishers
+- Use ViewInboxByAccount to view any offers accepted by publishers -> for advertisers
+
