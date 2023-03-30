@@ -2,7 +2,7 @@
   <img src="https://assets-global.website-files.com/60118ca1c2eab61d24bcf151/62f2829c615e2b59c7e3879e_Full.png" alt="Corda" width="500">
 </p>
 
-# Crytpo Arcade - Kotlin
+# Crypto Arcade - Kotlin
 
 Welcome to the In-Game Advertising Marketplace, where you can buy spaces within the game to advertise
 
