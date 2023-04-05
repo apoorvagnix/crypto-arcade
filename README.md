@@ -60,4 +60,4 @@ run vaultQuery contractStateType: com.template.states.AdInventoryState
 - Use ViewInboxByAccount to view any proposal made by advertisers -> for publishers
 - Use ViewInboxByAccount to view any offers accepted by publishers -> for advertisers
 
->flow start AcceptAdvertisementProposalFlow whoAmI: EA-SPORTS, advertiser: NIKE, linearId:
+>flow start AcceptAdvertisementProposalFlow publisher: EA-SPORTS, advertiser: NIKE, linearId:
