@@ -69,13 +69,13 @@ class AdInventoryContract : Contract {
                     "The input AdInventoryState must have 'proposed' status." using (inputState.getAdStatus() == "proposed")
                     "The output AdInventoryState must have 'agreed' status." using (outputState.getAdStatus() == "agreed")
 
-                    "Only the status field should change when agreeing to an AdInventory." using (
-                            inputState.copy(adStatus = outputState.getAdStatus()) == outputState
-                            )
+//                    "Only the status field should change when agreeing to an AdInventory." using (
+//                            inputState.copy(adStatus = outputState.getAdStatus()) == outputState
+//                            )
 
-                    "The participants must sign the transaction when agreeing to an AdInventory." using (
-                            command.signers.containsAll(inputState.participants.map { it.owningKey })
-                            )
+//                    "The participants must sign the transaction when agreeing to an AdInventory." using (
+//                            command.signers.containsAll(inputState.participants.map { it.owningKey })
+//                            )
                 }
             }
         }

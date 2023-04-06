@@ -20,8 +20,8 @@ data class AdInventoryState(
     private val adExpiry: Date?,
     private val adStatus: String,
     private val rejectReason: String?,
-    private val publisher: AnonymousParty,
-    private val advertiser: AnonymousParty,
+    val publisher: AnonymousParty,
+    val advertiser: AnonymousParty,
     override val linearId: UniqueIdentifier = UniqueIdentifier(),
     override val participants: List<AbstractParty> = listOf(publisher, advertiser)
 
@@ -52,7 +52,7 @@ data class AdInventoryState(
 
     fun getCost() : Amount<Currency> = adCost
 
-    fun getPublisher() : AnonymousParty = publisher
-
     fun getAdType() : String = adType
+
+    fun getLinerId() : UniqueIdentifier = linearId
 }
