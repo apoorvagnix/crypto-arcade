@@ -5,16 +5,12 @@ import com.r3.corda.lib.accounts.contracts.states.AccountInfo
 import com.r3.corda.lib.accounts.workflows.accountService
 import com.r3.corda.lib.accounts.workflows.flows.RequestKeyForAccount
 import com.r3.corda.lib.accounts.workflows.flows.ShareAccountInfoFlow
-import com.r3.corda.lib.accounts.workflows.flows.ShareStateAndSyncAccountsFlow
-import com.r3.corda.lib.ci.workflows.SyncKeyMappingFlow
 import com.template.contracts.AdInventoryContract
 import com.template.states.AdInventoryState
-import net.corda.core.contracts.Command
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.*
-import net.corda.core.identity.AnonymousParty
 import net.corda.core.node.StatesToRecord
-import net.corda.core.node.services.queryBy
+import net.corda.core.node.services.Vault
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
@@ -63,6 +59,9 @@ class AcceptAdvertisementProposalFlow(
     @Suspendable
     override fun call(): String {
 
+        //Generate key for transaction
+        progressTracker.currentStep = GENERATING_KEYS
+
         // Retrieve the publisher and advertiser accounts from the account names
         val publisherAccount = accountService.accountInfo(publisher).single().state.data
         //val publisherKey = subFlow(NewKeyForAccount(publisherAccount.identifier.id)).owningKey
@@ -81,27 +80,29 @@ class AcceptAdvertisementProposalFlow(
         val advertiserAccountKey = advertiserAccountAnonymousParty.owningKey
 
 
+        progressTracker.currentStep = RETRIEVING_STATE
         // Retrieve the proposed AdInventoryState from the vault
-        val myAccount = accountService.accountInfo(publisher).single().state.data
 
-
-        //CHECKS ---------- ----------
-        if (myAccount.name != "EA-SPORTS") {
-            throw IllegalArgumentException("Could not find EA-SPORTS")
-        }
-        if (advertiserAccount.name != "NIKE") {
-            throw IllegalArgumentException("Could not find NIKE")
-        }
-        //CHECKS ---------- ----------
+        //LinearStateQueryCriteria with the specified linearId
+        /*val linearIdCriteria = QueryCriteria.LinearStateQueryCriteria(
+            null,
+            listOf(linearId),
+            null,
+            Vault.StateStatus.UNCONSUMED,
+            null,
+            Vault.RelevancyStatus.RELEVANT,
+            null
+        )*/
 
         val criteria = QueryCriteria.VaultQueryCriteria(
-            externalIds = listOf(myAccount.identifier.id)
+            externalIds = listOf(publisherAccount.identifier.id)
         )
 
-        val adInventoryStateAndRef = serviceHub.vaultService.queryBy(
-            contractStateType = AdInventoryState::class.java,
-            criteria = criteria
-        ).states.firstOrNull()?: throw FlowException("Ad proposal with ID $linearId not found or already consumed")
+        val adInventoryStateAndRef = serviceHub.vaultService
+            .queryBy(AdInventoryState::class.java, criteria)
+            .states
+            .firstOrNull()
+            ?: throw FlowException("Ad proposal with ID $linearId not found or already consumed")
 
         val inputAdInventoryState = adInventoryStateAndRef.state.data
 
@@ -110,31 +111,12 @@ class AcceptAdvertisementProposalFlow(
             throw IllegalArgumentException("Flow can only be initiated by the publisher.")
         }
 
+        progressTracker.currentStep = UPDATING_STATE
         // Create a new AdInventoryState with the "agreed" status
         val outputAdInventoryState = inputAdInventoryState.copy(adStatus = "agreed") // Only update the adStatus field
 
 
-        //CHECKS ---------- ----------
-        /*val publisherCheck = accountService.accountInfo(inputAdInventoryState.publisher.owningKey)?.state?.data
-            ?: throw FlowException("Publisher account not found")
-        val publisherCheckName = publisherCheck.name
-
-        if (publisherCheckName == "EA-SPORTS") {
-            throw IllegalArgumentException("FOUND Party EA-SPORTS")
-        }
-
-        val advertiserCheck = accountService.accountInfo(inputAdInventoryState.advertiser.owningKey)?.state?.data
-            ?: throw FlowException("Advertiser account not found")
-        val advertiserCheckName = advertiserCheck.name
-        */
-
-        val allAccounts = accountService.ourAccounts()
-        allAccounts.forEach { accountStateAndRef ->
-            val account = accountStateAndRef.state.data
-            logger.info("Account: ${account.name} with owningKey: ${account.host}")
-        }
-        //CHECKS ---------- ----------
-
+        progressTracker.currentStep = BUILDING_TRANSACTION
         // Build the transaction
         val notary = serviceHub.networkMapCache.notaryIdentities.first()
         val transactionBuilder = TransactionBuilder(notary)
@@ -145,19 +127,23 @@ class AcceptAdvertisementProposalFlow(
                 listOf(ourIdentity.owningKey, advertiserAccountKey)
             )
 
+        progressTracker.currentStep = VERIFYING_TRANSACTION
         // Verify the transaction
         transactionBuilder.verify(serviceHub)
 
+        progressTracker.currentStep = SIGNING_TRANSACTION
         // Sign the transaction
         val locallySignedTx = serviceHub.signInitialTransaction(transactionBuilder, listOfNotNull(ourIdentity.owningKey, publisherKey))
 
         // Initiate a session with the advertiser
         val sessionForAdvertiser = initiateFlow(advertiserAccountAnonymousParty)
 
+        progressTracker.currentStep = GATHERING_SIGS
         // Collect the advertiser's signature
         val advertiserSignature = subFlow(CollectSignatureFlow(locallySignedTx, sessionForAdvertiser, advertiserAccountKey))
         val signedByBothParties = locallySignedTx.withAdditionalSignatures(advertiserSignature)
 
+        progressTracker.currentStep = FINALISING_TRANSACTION
         // Finalize the transaction
         subFlow(FinalityFlow(signedByBothParties, listOf(sessionForAdvertiser).filter { it.counterparty != ourIdentity }))
 
@@ -206,86 +192,4 @@ class AcceptAdvertisementProposalResponderFlow(val counterpartySession: FlowSess
         }
     }
 }
-
-
-
-/*
-
-@Suspendable
-override fun call(): String {
-    // Step 1. Get the AdInventoryState from the vault
-    */
-/*val adInventoryStateAndRef = serviceHub.vaultService.queryBy<AdInventoryState>(
-        QueryCriteria.LinearStateQueryCriteria(linearId = listOf(adInventoryLinearId))
-    ).states.singleOrNull() ?: throw FlowException("AdInventoryState not found")*//*
-
-
-    //START
-    // Retrieve the proposed AdInventoryState from the vault
-    val myAccount = accountService.accountInfo(publisherName).single().state.data
-    val criteria = QueryCriteria.VaultQueryCriteria(
-        externalIds = listOf(myAccount.identifier.id)
-    )
-    val adInventoryStateAndRef = serviceHub.vaultService.queryBy(
-        contractStateType = AdInventoryState::class.java,
-        criteria = criteria
-    ).states.firstOrNull()?: throw FlowException("Ad proposal with ID $adInventoryLinearId not found or already consumed")
-    //END
-
-    val inputAdInventory = adInventoryStateAndRef.state.data
-
-    // Step 2. Verify if the publisher account is the node's account
-    val publisherAccount = accountService.accountInfo(inputAdInventory.publisher.owningKey)?.state?.data
-        ?: throw FlowException("Publisher account not found")
-    if (publisherAccount.host != ourIdentity) throw FlowException("The node is not the publisher")
-
-    // Step 3. Verify if the advertiser account matches the input account name
-    val advertiserAccount = accountService.accountInfo(inputAdInventory.advertiser.owningKey)?.state?.data
-        ?: throw FlowException("Advertiser account not found")
-    if (advertiserAccount.name != advertiserName) throw FlowException("The account name does not match the advertiser")
-
-    // Step 4. Create a new AdInventoryState with the updated status
-    val updatedAdInventory = inputAdInventory.copy(adStatus = "agreed")
-
-    // Step 5. Create a command and a transaction builder
-    val command = Command(
-        AdInventoryContract.Commands.Agree(),
-        listOf(inputAdInventory.publisher.owningKey, inputAdInventory.advertiser.owningKey)
-    )
-    val transactionBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities.first())
-        .addInputState(adInventoryStateAndRef)
-        .addOutputState(updatedAdInventory, AdInventoryContract.ID)
-        .addCommand(command)
-
-    // Step 6. Verify and sign the transaction
-    transactionBuilder.verify(serviceHub)
-    val signedTransaction =
-        serviceHub.signInitialTransaction(transactionBuilder, inputAdInventory.publisher.owningKey)
-
-    // Step 7. Collect the counterparty's signature
-    val counterpartySession = initiateFlow(advertiserAccount.host)
-    val fullySignedTransaction = subFlow(CollectSignaturesFlow(signedTransaction, listOf(counterpartySession)))
-
-    // Step 8. Finalize the transaction
-    subFlow(FinalityFlow(fullySignedTransaction, listOf(counterpartySession)))
-
-    return "DONE TRANSACTION"
-
-}
-
-@InitiatedBy(AcceptAdvertisementProposalFlow::class)
-class AcceptAdvertisementProposalResponderFlow(private val counterpartySession: FlowSession) : FlowLogic<Unit>() {
-    @Suspendable
-    override fun call() {
-        val signedTransactionFlow = object : SignTransactionFlow(counterpartySession) {
-            override fun checkTransaction(stx: SignedTransaction) {
-                // Implement any additional checks here
-            }
-        }
-        subFlow(signedTransactionFlow)
-        subFlow(ReceiveFinalityFlow(counterpartySession))
-    }
-}
-}
-*/
 

@@ -1,14 +1,160 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Example front-end.</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-components-web/4.0.0/material-components-web.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/material-components-web/4.0.0/material-components-web.min.js"></script>
+    <style>
+        body {
+            font-family: "Roboto", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #ADE4DB;
+            margin: 0;
+            padding: 0;
+        }
+        .form {
+            background-color: white;
+            padding: 32px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .welcome {
+            text-align: center;
+            font-weight: bold;
+            color: #6DA9E4;
+            margin-top: 0;
+        }
+        .mdc-text-field {
+            width: 100%;
+        }
+        .submit-btn {
+            width: 100%;
+            margin-top: 16px;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const advertiserTextField = document.querySelector('#advertiserName').parentElement;
+            mdc.textField.MDCTextField.attachTo(advertiserTextField);
+
+            const publisherTextField = document.querySelector('#publisherName').parentElement;
+            mdc.textField.MDCTextField.attachTo(publisherTextField);
+
+            mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'));
+        });
+    </script>
 </head>
 <body>
-    <div>
-        <img src="https://www.corda.net/wp-content/uploads/2016/11/fg005_corda_b.png" alt="Corda" width="500">
-        <h1>CorDapp Template (Kotlin Version)</h1>
-        <p>Learn more about how to build CorDapps at <a href="http://www.github.com/corda/samples-kotlin">sample-kotlin</a></p>
+
+<div class="form">
+    <h1 class="welcome" style="font-size: 50px">Welcome to Crypto Arcade</h1>
+
+    <h2 class="welcome" style="font-size: 30px; margin-bottom: 16px;">Create Accounts</h2>
+
+    <div class="mdc-text-field mdc-text-field--outlined" style="margin-bottom: 1px;">
+        <input type="text" id="advertiserName" class="mdc-text-field__input" required>
+        <span class="mdc-notched-outline">
+      <span class="mdc-notched-outline__leading"></span>
+      <span class="mdc-notched-outline__notch">
+        <label for="advertiserName" class="mdc-floating-label">Advertiser Name</label>
+      </span>
+      <span class="mdc-notched-outline__trailing"></span>
+    </span>
     </div>
+    <button type="create-advertiser-account" class="mdc-button mdc-button--raised submit-btn" disabled>
+        <span class="mdc-button__ripple"></span>
+        <span class="mdc-button__label">Create Advertiser Account</span>
+    </button>
+
+    <div class="mdc-text-field mdc-text-field--outlined" style="margin-bottom: 1px; margin-top: 16px">
+        <input type="text" id="publisherName" class="mdc-text-field__input" required>
+        <span class="mdc-notched-outline">
+      <span class="mdc-notched-outline__leading"></span>
+      <span class="mdc-notched-outline__notch">
+        <label for="publisherName" class="mdc-floating-label">Publisher Name</label>
+      </span>
+      <span class="mdc-notched-outline__trailing"></span>
+    </span>
+    </div>
+    <button type="create-publisher-account" class="mdc-button mdc-button--raised submit-btn" disabled>
+        <span class="mdc-button__ripple"></span>
+        <span class="mdc-button__label">Create Publisher Account</span>
+    </button>
+
+
+    <h2 class="welcome" style="font-size: 30px; margin-bottom: 16px; margin-top: 66px">Access Pages</h2>
+    <button type="button" onclick="window.location.href = 'advertiser.html';" class="mdc-button mdc-button--raised submit-btn">
+        <span class="mdc-button__ripple"></span>
+        <span class="mdc-button__label">Go to Advertiser Page</span>
+    </button>
+    <button type="button" onclick="window.location.href = 'publisher.html';" class="mdc-button mdc-button--raised submit-btn">
+        <span class="mdc-button__ripple"></span>
+        <span class="mdc-button__label">Go to Publisher Page</span>
+    </button>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/material-components-web/4.0.0/material-components-web.min.js"></script>
+
+<script>
+    document.getElementById('advertiserName').addEventListener('input', function() {
+        const createAdvertiserBtn = document.querySelector('.mdc-button');
+        createAdvertiserBtn.disabled = this.value.trim() === '';
+    });
+
+    document.getElementById('publisherName').addEventListener('input', function() {
+        const createPublisherBtn = document.querySelectorAll('.mdc-button')[1];
+        createPublisherBtn.disabled = this.value.trim() === '';
+    });
+
+    // logic to create accounts when the buttons are clicked.
+    function createAdvertiserAccount() {
+        const advertiserName = document.getElementById('advertiserName').value;
+        fetch('http://localhost:10055/api/v1/advertisement/advertiser/create-account', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: advertiserName
+        }).then(response => {
+            if (response.ok) {
+                alert('Successfully created advertiser account.');
+            } else {
+                throw new Error('Failed to create advertiser account.');
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+            alert('Failed to create advertiser account.');
+        });
+    }
+
+    function createPublisherAccount() {
+        const publisherName = document.getElementById('publisherName').value;
+        fetch('http://localhost:10050/api/v1/advertisement/publisher/create-account', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: publisherName
+        }).then(response => {
+            if (response.ok) {
+                alert('Successfully created publisher account.');
+            } else {
+                throw new Error('Failed to create publisher account.');
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+            alert('Failed to create publisher account.');
+        });
+    }
+
+    document.querySelector('button[type="create-advertiser-account"]').addEventListener('click', createAdvertiserAccount);
+    document.querySelector('button[type="create-publisher-account"]').addEventListener('click', createPublisherAccount);
+</script>
 </body>
 </html>

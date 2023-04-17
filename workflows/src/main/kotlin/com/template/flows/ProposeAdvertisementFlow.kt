@@ -9,12 +9,8 @@ import com.r3.corda.lib.accounts.workflows.flows.ShareStateAndSyncAccounts
 import com.template.contracts.AdInventoryContract
 import com.template.states.AdInventoryState
 import net.corda.core.contracts.Amount
-import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.*
-import net.corda.core.identity.AnonymousParty
-import net.corda.core.identity.CordaX500Name
-import net.corda.core.identity.Party
 import net.corda.core.node.StatesToRecord
 import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.QueryCriteria
@@ -24,91 +20,10 @@ import net.corda.core.utilities.ProgressTracker
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
-/*
 
 // *********
 // * Flows *
 // *********
-@InitiatingFlow
-@StartableByRPC
-class ProposeAdvertisementFlow(
-    private val adType: String,
-    private val adPlacement: String,
-    private val adCost: Amount<Currency>,
-    private val adExpiry: Date?,
-    private val publisher: Party
-) : FlowLogic<SignedTransaction>() {
-
-    @Suspendable
-    override fun call(): SignedTransaction {
-
-        if (ourIdentity == publisher) {
-            throw IllegalArgumentException("The advertiser and publisher must be different parties.")
-        }
-
-        //build the output state
-        val uniqueID = UniqueIdentifier()
-
-        // Create a new AdInventoryState with the "proposed" status
-        val adInventoryState = AdInventoryState(
-            adType = adType,
-            adPlacement = adPlacement,
-            adCost = adCost,
-            adExpiry = adExpiry,
-            adStatus = "proposed",
-            rejectReason = null,
-            publisher = publisher,
-            advertiser = ourIdentity,
-            linearId = uniqueID
-        )
-
-
-        // Build the transaction
-        val notary = serviceHub.networkMapCache.notaryIdentities.first()
-
-        val txBuilder = TransactionBuilder(notary)
-            .addOutputState(adInventoryState)
-            .addCommand(AdInventoryContract.Commands.Propose(), listOf(ourIdentity.owningKey, publisher.owningKey))
-
-        // Verify and sign the transaction
-        txBuilder.verify(serviceHub)
-
-        val signedTx = serviceHub.signInitialTransaction(txBuilder)
-
-        // Collect the publisher's signature
-        val publisherSession = initiateFlow(publisher)
-        val fullySignedTx = subFlow(CollectSignaturesFlow(signedTx, listOf(publisherSession)))
-
-        val sessions = if (publisher != ourIdentity) listOf(publisherSession) else emptyList()
-        // Finalize the transaction and update the ledger
-        //return subFlow(FinalityFlow(fullySignedTx, listOf(publisherSession)))
-        return subFlow(FinalityFlow(fullySignedTx, sessions))
-    }
-}
-
-@InitiatedBy(ProposeAdvertisementFlow::class)
-class ProposeAdvertisementResponderFlow(val counterpartySession: FlowSession) : FlowLogic<Unit>() {
-    @Suspendable
-    override fun call() {
-        val signedTransactionFlow = object : SignTransactionFlow(counterpartySession) {
-            override fun checkTransaction(stx: SignedTransaction) {
-                // Add any additional checks if required
-            }
-        }
-
-        val signedTx = subFlow(signedTransactionFlow)
-
-        // Call the ReceiveFinalityFlow to record the transaction on the publisher's side
-        subFlow(ReceiveFinalityFlow(counterpartySession, signedTx.id))
-    }
-}
-*/
-
-
-// *********
-// * NEW Flows *
-// *********
-
 @StartableByRPC
 @StartableByService
 @InitiatingFlow
@@ -160,19 +75,14 @@ class ProposeAdvertisementFlow(
 
         val targetAccount = accountService.accountInfo(whereTo).single().state.data
 
+        logger.info("Share advertiser account info with the publisher")
         val targetAccountSession = initiateFlow(targetAccount.host)
-
-        logger.info("Share publisher account info with the advertiser")
         subFlow(ShareAccountInfoFlow(accountService.accountInfo(whoAmI).single(), listOf( targetAccountSession)))
+
         val targetAcctAnonymousParty = subFlow(RequestKeyForAccount(targetAccount))
 
         //LOGIC
-        val allAccounts = accountService.ourAccounts()
-        allAccounts.forEach { accountStateAndRef ->
-            val account = accountStateAndRef.state.data
-            logger.info("Account: ${account.name} with owningKey: ${account.host}")
-        }
-        /*if (ourIdentity == publisher) {
+        /*if (ourIdentity == targetAcctAnonymousParty) {
             throw IllegalArgumentException("The advertiser and publisher must be different parties.")
         }*/
 
@@ -191,12 +101,6 @@ class ProposeAdvertisementFlow(
             advertiser = myAccountAnonymousParty,
             linearId = uniqueID
         )
-        /*
-        val stateAndRefToShare = serviceHub.vaultService.queryBy<AdInventoryState>().states.single()
-        val publisherLegalName = CordaX500Name(organisation = "publisher", locality = "London", country = "GB")
-        val publisherParty = serviceHub.identityService.wellKnownPartyFromX500Name(publisherLegalName)
-            ?: throw FlowException("Publisher party not found")
-        ShareStateAndSyncAccounts(stateAndRefToShare, publisherParty)*/
 
         //generating State for transfer
         progressTracker.currentStep = GENERATING_TRANSACTION
@@ -224,7 +128,8 @@ class ProposeAdvertisementFlow(
         val adInventoryStateAndRef = serviceHub.vaultService.queryBy<AdInventoryState>(adInventoryStateQueryCriteria).states.single()
         subFlow(ShareStateAndSyncAccounts(adInventoryStateAndRef, accountService.accountInfo(whereTo).single().state.data.host))
 
-        return "Proposal send to " + targetAccount.host.name.organisation + "'s "+ targetAccount.name + " team with linerID " + adInventoryState.linearId
+        return "Proposal send to " + targetAccount.host.name.organisation + "'s "+ targetAccount.name + " team with linerID " +
+                adInventoryState.linearId.toString()
     }
 }
 

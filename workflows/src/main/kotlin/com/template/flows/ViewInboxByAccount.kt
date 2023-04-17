@@ -28,7 +28,7 @@ class ViewInboxByAccount(
         val AdPlaced = serviceHub.vaultService.queryBy(
                 contractStateType = AdInventoryState::class.java,
                 criteria = criteria
-        ).states.map { "\n" + "Ad Proposal: " + it.state.data.linearId }
+        ).states.map { "\n" + "Ad Proposal: " + it.state.data.linearId  + ", AdType: " + it.state.data.getAdType() }
 
         return AdPlaced
     }

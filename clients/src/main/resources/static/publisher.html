@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publisher</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-components-web@latest/dist/material-components-web.min.css">
+    <style>
+        body {
+            background-image: url('https://images.alphacoders.com/940/940664.png');
+            background-size: cover;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 24px;
+            border-radius: 8px;
+            width: 800px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 40px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 24px;
+            color: #6DA9E4;
+            animation: blink 5s linear infinite;
+        }
+
+        @keyframes blink {
+            0% {
+                color: #FF6D60;
+            }
+            20% {
+                color: #F7D060;
+            }
+            40% {
+                color: #F3E99F;
+            }
+            60% {
+                color: #98D8AA;
+            }
+            80% {
+                color: #FF6D60;
+            }
+            100% {
+                color: #98D8AA;
+            }
+        }
+
+        .welcome {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 24px;
+            background: linear-gradient(to left, #FFEBEB, #ADE4DB, #6DA9E4, #F6BA6F);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow-text 5s linear infinite;
+        }
+
+        @keyframes rainbow-text {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: -400% 0;
+            }
+        }
+
+        .submit-btn {
+            margin-top: 24px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="form-container">
+    <div class="form">
+        <h1 class="welcome" style="font-size: 40px">Welcome to Crypto Arcade</h1>
+        <h2 class="title" style="font-size: 30px; margin-bottom: 16px;">View and Manage Proposals</h2>
+
+        <button type="fetch-proposals" class="mdc-button mdc-button--raised submit-btn">
+            <span class="mdc-button__ripple"></span>
+            <span class="mdc-button__label">Fetch Proposals</span>
+        </button>
+        <div id="proposals-container"></div>
+    </div>
+</div>
+
+<!-- Material Components Web JS -->
+<script src="https://cdn.jsdelivr.net/npm/material-components-web@latest/dist/material-components-web.min.js"></script>
+<script>
+    // Auto-initialize Material Components
+    mdc.autoInit();
+</script>
+</body>
+
+</html>
