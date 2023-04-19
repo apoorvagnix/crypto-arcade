@@ -97,6 +97,62 @@
       margin-top: 32px;
     }
   </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const accountNameTextField = document.querySelector('#whoAmI').parentElement;
+            mdc.textField.MDCTextField.attachTo(accountNameTextField);
+            mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'));
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const accountNameTextField = document.querySelector('#whereTo').parentElement;
+            mdc.textField.MDCTextField.attachTo(accountNameTextField);
+            mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'));
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const accountNameTextField = document.querySelector('#adType').parentElement;
+            mdc.textField.MDCTextField.attachTo(accountNameTextField);
+            mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'));
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const accountNameTextField = document.querySelector('#adPlacement').parentElement;
+            mdc.textField.MDCTextField.attachTo(accountNameTextField);
+            mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'));
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const accountNameTextField = document.querySelector('#adCost').parentElement;
+            mdc.textField.MDCTextField.attachTo(accountNameTextField);
+            mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'));
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const accountNameTextField = document.querySelector('#adExpiry').parentElement;
+            mdc.textField.MDCTextField.attachTo(accountNameTextField);
+            mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'));
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const accountNameTextField = document.querySelector('#fetchAd').parentElement;
+            mdc.textField.MDCTextField.attachTo(accountNameTextField);
+            mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'));
+        });
+    </script>
 </head>
 
 <body>
@@ -165,16 +221,108 @@
                         <span class="mdc-notched-outline__trailing"></span>
                     </span>
         </div>
-      <button type="submit" class="mdc-button mdc-button--raised submit-btn">
+      <button id="proposeAdBtn" type="submit" class="mdc-button mdc-button--raised submit-btn">
         <span class="mdc-button__ripple"></span>
-        <span class="mdc-button__label">Submit</span>
+        <span class="mdc-button__label">Propose Advertisement</span>
       </button>
+
+      <div class="mdc-text-field mdc-text-field--outlined" style="margin-top: 36px;">
+           <input type="text" id="fetchAd" class="mdc-text-field__input" required>
+           <span class="mdc-notched-outline">
+                        <span class="mdc-notched-outline__leading"></span>
+                        <span class="mdc-notched-outline__notch">
+                            <label for="fetchAd" class="mdc-floating-label">Advertiser Name</label>
+                        </span>
+                        <span class="mdc-notched-outline__trailing"></span>
+                    </span>
+    </div>
+    <button id="FetchAdBtn" type="submit" class="mdc-button mdc-button--raised submit-btn">
+        <span class="mdc-button__ripple"></span>
+        <span class="mdc-button__label">Show Advertisement</span>
+    </button>
+
     </form>
   </div>
 </div>
 
 <!-- Material Components Web JS -->
 <script src="https://cdn.jsdelivr.net/npm/material-components-web@latest/dist/material-components-web.min.js"></script>
+
+<script>
+    document.getElementById('proposeAdBtn').addEventListener('click', function(event) {
+        event.preventDefault();
+
+        // Get the values from the input fields
+        const advertiser = document.getElementById('whoAmI').value;
+        const publisher = document.getElementById('whereTo').value;
+        const adType = document.getElementById('adType').value;
+        const adPlacement = document.getElementById('adPlacement').value;
+        const adCost = document.getElementById('adCost').value;
+        const adExpiry = document.getElementById('adExpiry').value;
+
+        // Create the AdData object
+        const adData = {
+            advertiser,
+            publisher,
+            adType,
+            adPlacement,
+            adCost,
+            adExpiry
+        };
+
+        // Call the /propose API with a POST request
+        fetch('http://localhost:10055/api/v1/advertisement/propose', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(adData)
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('Advertisement proposed successfully.');
+                } else {
+                    throw new Error('Failed to propose advertisement.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to propose advertisement.');
+            });
+    });
+</script>
+
+<script>
+    document.getElementById("FetchAdBtn").addEventListener("click", function(event) {
+        event.preventDefault(); // Prevent the default form submission behavior
+
+        const advertiser = document.getElementById("fetchAd").value;
+
+        fetch("http://localhost:10055/api/v1/advertisement/showAdvertisement?advertiser=" + encodeURIComponent(advertiser), {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+            .then(response => response.text())
+            .then(status => {
+                if (status === "agreed") {
+                    window.location.href = "http://localhost:10055/advertisment.html";
+                }
+                else if (status === "proposed") {
+                    alert("Proposal is not yet accepted, contact the publisher.");
+                }
+                else {
+                    alert("Account does not exist or has no active proposal.");
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching advertisement:", error);
+            });
+    });
+</script>
+
+
 <script>
   // Auto-initialize Material Components
   mdc.autoInit();

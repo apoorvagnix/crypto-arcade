@@ -1,8 +1,6 @@
 package com.template.webserver.controller
 
-import com.template.flows.CreateNewAccount
-import com.template.flows.ProposeAdvertisementFlow
-import com.template.flows.ShareAccountTo
+import com.template.flows.*
 import com.template.webserver.AdData
 import com.template.webserver.NodeRPCConnection
 import net.corda.core.contracts.Amount
@@ -12,10 +10,7 @@ import net.corda.core.messaging.startFlow
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 private val log = LoggerFactory.getLogger(RestController::class.java)
@@ -63,5 +58,19 @@ class AccountController(nodeRPCConnection: NodeRPCConnection) {
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create account: ${e.message}")
         }
     }
+
+    // In your controller class
+    @GetMapping("/viewProposals")
+    fun viewProposals(@RequestParam("accountName") accountName: String): ResponseEntity<List<AdInventoryInfo>> {
+        return try {
+            val flowHandle = proxy.startFlow(::ViewInboxByAccount, accountName)
+            val adInventoryInfoList = flowHandle.returnValue.get()
+            ResponseEntity.ok(adInventoryInfoList)
+        } catch (e: Exception) {
+            log.error("Error fetching proposals", e)
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(emptyList())
+        }
+    }
+
 
 }

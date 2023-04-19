@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advertisement</title>
+  <style>
+    body {
+      background-image: url('https://i.ytimg.com/vi/sASI22iNCzs/maxresdefault.jpg');
+      background-size: cover;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      position: relative;
+      height: 100vh;
+    }
+
+    #video-container {
+      position: fixed;
+      top: 87%; /* vertically centered */
+      right: -16.5%; /* shift it to the left */
+      transform: translateY(-50%); /* adjust the vertical centering */
+      width: 45%; /* adjust this value to make the video box bigger or smaller */
+      height: auto;
+      z-index: 1; /* make sure the video is on top of other elements */
+    }
+
+    video {
+      width: 340px;
+      height: 300px;
+      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+
+<body>
+<div id="video-container">
+  <video id="ad-video" controls autoplay loop muted>
+    <source src="https://jor3cev-my.sharepoint.com/personal/apoorva_agnihotri_r3_com/_layouts/15/download.aspx?UniqueId=6b70aa35-e34b-471d-8fe6-a6de86f00ff1" frameborder="0" scrolling="no" allowfullscreen title="CryptoArcade.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+</body>
+
+</html>

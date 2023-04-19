@@ -3,14 +3,23 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Publisher</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-components-web@latest/dist/material-components-web.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-components-web/4.0.0/material-components-web.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/material-components-web/4.0.0/material-components-web.min.js"></script>
     <style>
         body {
             background-image: url('https://images.alphacoders.com/940/940664.png');
             background-size: cover;
             font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 90vh;
+            background-color: #ADE4DB;
+            margin: 0;
+            padding: 0;
         }
 
         .form-container {
@@ -37,6 +46,25 @@
             animation: blink 5s linear infinite;
         }
 
+        .welcome {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 24px;
+            background: linear-gradient(to left, #FFEBEB, #ADE4DB, #6DA9E4, #F6BA6F);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow-text 5s linear infinite;
+        }
+
+        .mdc-text-field {
+            width: 100%;
+        }
+        .submit-btn {
+            width: 100%;
+            margin-top: 16px;
+        }
+
         @keyframes blink {
             0% {
                 color: #FF6D60;
@@ -58,17 +86,6 @@
             }
         }
 
-        .welcome {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 24px;
-            background: linear-gradient(to left, #FFEBEB, #ADE4DB, #6DA9E4, #F6BA6F);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: rainbow-text 5s linear infinite;
-        }
-
         @keyframes rainbow-text {
             0% {
                 background-position: 0 0;
@@ -77,30 +94,98 @@
                 background-position: -400% 0;
             }
         }
-
-        .submit-btn {
-            margin-top: 24px;
-        }
     </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const accountNameTextField = document.querySelector('#accountName').parentElement;
+            mdc.textField.MDCTextField.attachTo(accountNameTextField);
+            mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'));
+        });
+    </script>
 </head>
 
 <body>
 
-<div class="form-container">
-    <div class="form">
-        <h1 class="welcome" style="font-size: 40px">Welcome to Crypto Arcade</h1>
-        <h2 class="title" style="font-size: 30px; margin-bottom: 16px;">View and Manage Proposals</h2>
+<div class="form">
+    <h1 class="welcome" style="font-size: 50px">Welcome to Crypto Arcade</h1>
+    <h2 class="welcome" style="font-size: 30px; margin-bottom: 16px;">View and Manage Proposals</h2>
 
-        <button type="fetch-proposals" class="mdc-button mdc-button--raised submit-btn">
-            <span class="mdc-button__ripple"></span>
-            <span class="mdc-button__label">Fetch Proposals</span>
-        </button>
-        <div id="proposals-container"></div>
+    <div class="mdc-text-field mdc-text-field--outlined" style="margin-bottom: 1px;">
+        <input type="text" id="accountName" class="mdc-text-field__input" required>
+        <span class="mdc-notched-outline">
+            <span class="mdc-notched-outline__leading"></span>
+            <span class="mdc-notched-outline__notch">
+                <label for="accountName" class="mdc-floating-label">Account Name</label>
+            </span>
+            <span class="mdc-notched-outline__trailing"></span>
+        </span>
     </div>
+    <button id="fetchProposal" class="mdc-button mdc-button--raised submit-btn" disabled>
+        <span class="mdc-button__ripple"></span>
+        <span class="mdc-button__label">Fetch Proposals</span>
+    </button>
+    <div id="proposalsContainer"></div>
 </div>
 
 <!-- Material Components Web JS -->
-<script src="https://cdn.jsdelivr.net/npm/material-components-web@latest/dist/material-components-web.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/material-components-web/4.0.0/material-components-web.min.js"></script>
+
+<script>
+    // Add event listener to enable the "Fetch Proposals" button
+    document.getElementById('accountName').addEventListener('input', function() {
+        const fetchProposalsBtn = document.querySelector('#fetchProposal');
+        fetchProposalsBtn.disabled = this.value.trim() === '';
+    });
+
+    document.getElementById("fetchProposal").addEventListener("click", async () => {
+        const accountName = document.getElementById("accountName").value;
+        const response = await fetch(`http://localhost:10050/api/v1/advertisement/viewProposals?accountName=${accountName}`);
+        const proposals = await response.json();
+        const proposalsContainer = document.getElementById("proposalsContainer");
+
+        proposalsContainer.innerHTML = '';
+        proposals.forEach(proposal => {
+            const proposalDiv = document.createElement("div");
+            proposalDiv.innerHTML = `
+                    <h3>Ad Proposal: ${proposal.linearId}</h3>
+                    <p>Ad Type: ${proposal.adType}</p>
+                    <p>Publisher: ${proposal.publisher}</p>
+                    <p>Advertiser: ${proposal.advertiser}</p>
+                    <button class="mdc-button mdc-button--raised accept-btn" data-linearid="${proposal.linearId}">
+                        <span class="mdc-button__ripple"></span>
+                        <span class="mdc-button__label">Accept</span>
+                    </button>
+                    <button class="mdc-button mdc-button--raised reject-btn" data-linearid="${proposal.linearId}">
+                        <span class="mdc-button__ripple"></span>
+                        <span class="mdc-button__label">Reject</span>
+                    </button>
+                `;
+            proposalsContainer.appendChild(proposalDiv);
+
+
+            const acceptButton = document.querySelector(`button.accept-btn[data-linearid="${proposal.linearId}"]`);
+            acceptButton.addEventListener("click", async () => {
+                const url = `http://localhost:10050/api/v1/advertisement/accept?publisher=${encodeURIComponent(proposal.publisher)}&advertiser=${encodeURIComponent(proposal.advertiser)}&linearId=${proposal.linearId}`;
+                const response = await fetch(url);
+
+                if (response.ok) {
+                    const result = await response.text();
+                    console.log(result);
+
+                    alert('Advertisement accepted successfully.');
+                } else {
+                    const error = await response.text();
+                    console.error(error);
+
+                    alert('Advertisement not accepted.');
+                }
+            });
+        });
+    });
+</script>
+
+
 <script>
     // Auto-initialize Material Components
     mdc.autoInit();
