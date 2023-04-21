@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/material-components-web/4.0.0/material-components-web.min.js"></script>
     <style>
         body {
-            background-image: url('https://images.alphacoders.com/940/940664.png');
+            background-image: url('images/joey-kwok-jbIsTd7rdd8-unsplash.jpg');
             background-size: cover;
             font-family: 'Roboto', sans-serif;
             display: flex;
@@ -30,7 +30,7 @@
         }
 
         .form {
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.8);
             padding: 24px;
             border-radius: 8px;
             width: 800px;
@@ -51,7 +51,7 @@
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 24px;
-            background: linear-gradient(to left, #FFEBEB, #ADE4DB, #6DA9E4, #F6BA6F);
+            background: linear-gradient(to left, #B43434, #3A9380, #2C5478, #B96B0F);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: rainbow-text 5s linear infinite;
@@ -67,22 +67,22 @@
 
         @keyframes blink {
             0% {
-                color: #FF6D60;
+                color: #FF073A; /* Neon Red */
             }
             20% {
-                color: #F7D060;
+                color: #c7c77f; /* Neon Yellow */
             }
             40% {
-                color: #F3E99F;
+                color: #FFFFFF; /* White */
             }
             60% {
-                color: #98D8AA;
+                color: #42dede; /* Neon Blue */
             }
             80% {
-                color: #FF6D60;
+                color: #FF073A; /* Neon Red */
             }
             100% {
-                color: #98D8AA;
+                color: #52e1e1; /* Neon Blue */
             }
         }
 
@@ -108,8 +108,8 @@
 <body>
 
 <div class="form">
-    <h1 class="welcome" style="font-size: 50px">Welcome to Crypto Arcade</h1>
-    <h2 class="welcome" style="font-size: 30px; margin-bottom: 16px;">View and Manage Proposals</h2>
+    <h1 class="welcome" style="font-size: 50px">Welcome Game Developers</h1>
+    <h2 class="title" style="font-size: 30px; margin-bottom: 16px;">View and Manage Proposals</h2>
 
     <div class="mdc-text-field mdc-text-field--outlined" style="margin-bottom: 1px;">
         <input type="text" id="accountName" class="mdc-text-field__input" required>
@@ -152,6 +152,10 @@
                     <p>Ad Type: ${proposal.adType}</p>
                     <p>Publisher: ${proposal.publisher}</p>
                     <p>Advertiser: ${proposal.advertiser}</p>
+                    <p>Ad Placement: ${proposal.adPlacement}</p>
+                    <p>Ad Expiry: ${proposal.adExpiry}</p>
+                    <p>Ad URL: ${proposal.adURL}</p>
+                    ${proposal.rejectReason && proposal.rejectReason.trim() !== '' ? `<p>Reject Reason: ${proposal.rejectReason}</p>` : ''}
                     <button class="mdc-button mdc-button--raised accept-btn" data-linearid="${proposal.linearId}">
                         <span class="mdc-button__ripple"></span>
                         <span class="mdc-button__label">Accept</span>
@@ -166,8 +170,21 @@
 
             const acceptButton = document.querySelector(`button.accept-btn[data-linearid="${proposal.linearId}"]`);
             acceptButton.addEventListener("click", async () => {
-                const url = `http://localhost:10050/api/v1/advertisement/accept?publisher=${encodeURIComponent(proposal.publisher)}&advertiser=${encodeURIComponent(proposal.advertiser)}&linearId=${proposal.linearId}`;
-                const response = await fetch(url);
+                const url = `http://localhost:10050/api/v1/advertisement/accept`;
+
+                const data = {
+                    publisher: proposal.publisher,
+                    advertiser: proposal.advertiser,
+                    linearId: proposal.linearId
+                };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json;charset=UTF-8'
+                    },
+                    body: JSON.stringify(data)
+                });
 
                 if (response.ok) {
                     const result = await response.text();
@@ -179,6 +196,46 @@
                     console.error(error);
 
                     alert('Advertisement not accepted.');
+                }
+            });
+
+            const rejectButton = document.querySelector(`button.reject-btn[data-linearid="${proposal.linearId}"]`);
+            rejectButton.addEventListener("click", async () => {
+
+                const rejectReason = window.prompt("Please enter the reject reason:");
+
+                if (rejectReason !== null) {
+                    const url = `http://localhost:10050/api/v1/advertisement/reject`;
+
+                    const data = {
+                        publisher: proposal.publisher,
+                        advertiser: proposal.advertiser,
+                        linearId: proposal.linearId,
+                        rejectReason: rejectReason
+                    };
+
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json;charset=UTF-8'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.text();
+                        console.log(result);
+
+                        alert('Advertisement rejected successfully.');
+                    } else {
+                        const error = await response.text();
+                        console.error(error);
+
+                        alert('Advertisement not rejected.');
+                    }
+                }
+                else {
+                    alert("You must provide a reject reason.");
                 }
             });
         });

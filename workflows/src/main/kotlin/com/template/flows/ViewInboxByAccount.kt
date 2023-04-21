@@ -5,12 +5,14 @@ import net.corda.core.flows.*
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.accounts.workflows.accountService
 import com.template.states.AdInventoryState
+import net.corda.core.contracts.Amount
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.AnonymousParty
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.serialization.CordaSerializable
+import java.util.*
 
 
 @StartableByRPC
@@ -48,7 +50,12 @@ class ViewInboxByAccount(
                 linearId = data.linearId.id.toString(),
                 adType = data.getAdType(),
                 publisher = publisherName,
-                advertiser = advertiserName
+                advertiser = advertiserName,
+                adPlacement = data.getAdPlacement(),
+                adCost = data.getAdCost(),
+                adExpiry = data.getAdExpiry(),
+                adURL = data.getAdURL(),
+                rejectReason = data.getRejectReason()
             )
         }
 
@@ -61,7 +68,12 @@ data class AdInventoryInfo(
     val linearId: String,
     val adType: String,
     val publisher: String,
-    val advertiser: String
+    val advertiser: String,
+    val adPlacement: String,
+    val adCost: Amount<Currency>,
+    val adExpiry: Date?,
+    val adURL: String,
+    val rejectReason: String?
 )
 
 

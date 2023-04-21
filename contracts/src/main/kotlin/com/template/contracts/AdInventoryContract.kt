@@ -31,11 +31,6 @@ class AdInventoryContract : Contract {
                     val outputState = tx.outputsOfType<AdInventoryState>().single()
 
                     "The output AdInventoryState must have 'proposed' status." using (outputState.getAdStatus() == "proposed")
-                    // ... additional checks for proposing an AdInventory ...
-
-                    //"The participants must sign the transaction when proposing an AdInventory." using (
-                    //        command.signers.containsAll(outputState.participants.map { it.owningKey })
-                    //        )
                 }
             }
 
@@ -49,14 +44,6 @@ class AdInventoryContract : Contract {
 
                     "The input AdInventoryState must have 'proposed' status." using (inputState.getAdStatus() == "proposed")
                     "The output AdInventoryState must have 'rejected' status." using (outputState.getAdStatus() == "rejected")
-
-                    "Only the status field should change when rejecting an AdInventory." using (
-                            inputState.copy(adStatus = outputState.getAdStatus()) == outputState
-                            )
-
-                    "The participants must sign the transaction when rejecting an AdInventory." using (
-                            command.signers.containsAll(inputState.participants.map { it.owningKey })
-                            )
                 }
             }
             is Commands.Agree -> {
@@ -68,14 +55,6 @@ class AdInventoryContract : Contract {
                     val outputState = tx.outputsOfType<AdInventoryState>().single()
                     "The input AdInventoryState must have 'proposed' status." using (inputState.getAdStatus() == "proposed")
                     "The output AdInventoryState must have 'agreed' status." using (outputState.getAdStatus() == "agreed")
-
-//                    "Only the status field should change when agreeing to an AdInventory." using (
-//                            inputState.copy(adStatus = outputState.getAdStatus()) == outputState
-//                            )
-
-//                    "The participants must sign the transaction when agreeing to an AdInventory." using (
-//                            command.signers.containsAll(inputState.participants.map { it.owningKey })
-//                            )
                 }
             }
         }

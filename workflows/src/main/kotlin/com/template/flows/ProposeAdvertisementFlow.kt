@@ -11,12 +11,15 @@ import com.template.states.AdInventoryState
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.*
+import net.corda.core.identity.Party
 import net.corda.core.node.StatesToRecord
 import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.QueryCriteria
+import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
+import java.net.URL
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
@@ -27,14 +30,7 @@ import java.util.concurrent.atomic.AtomicReference
 @StartableByRPC
 @StartableByService
 @InitiatingFlow
-class ProposeAdvertisementFlow(
-    val whoAmI: String,
-    val whereTo:String,
-    private val adType: String,
-    private val adPlacement: String,
-    private val adCost: Amount<Currency>,
-    private val adExpiry: Date?
-) : FlowLogic<String>(){
+class ProposeAdvertisementFlow(private val adData: ProposeAdvertisementData) : FlowLogic<String>() {
 
     companion object {
         object GENERATING_KEYS : ProgressTracker.Step("Generating Keys for transactions.")
@@ -68,16 +64,16 @@ class ProposeAdvertisementFlow(
 
         //Generate key for transaction
         progressTracker.currentStep = GENERATING_KEYS
-        val myAccount = accountService.accountInfo(whoAmI).single().state.data
+        val myAccount = accountService.accountInfo(adData.advertiser).single().state.data
         //val myKey = subFlow(NewKeyForAccount(myAccount.identifier.id)).owningKey
         val myAccountAnonymousParty = subFlow(RequestKeyForAccount(myAccount))
         val myKey = myAccountAnonymousParty.owningKey
 
-        val targetAccount = accountService.accountInfo(whereTo).single().state.data
+        val targetAccount = accountService.accountInfo(adData.publisher).single().state.data
 
         logger.info("Share advertiser account info with the publisher")
         val targetAccountSession = initiateFlow(targetAccount.host)
-        subFlow(ShareAccountInfoFlow(accountService.accountInfo(whoAmI).single(), listOf( targetAccountSession)))
+        subFlow(ShareAccountInfoFlow(accountService.accountInfo(adData.advertiser).single(), listOf( targetAccountSession)))
 
         val targetAcctAnonymousParty = subFlow(RequestKeyForAccount(targetAccount))
 
@@ -91,11 +87,12 @@ class ProposeAdvertisementFlow(
 
         // Create a new AdInventoryState with the "proposed" status
         val adInventoryState = AdInventoryState(
-            adType = adType,
-            adPlacement = adPlacement,
-            adCost = adCost,
-            adExpiry = adExpiry,
+            adType = adData.adType,
+            adPlacement = adData.adPlacement,
+            adCost = adData.adCost,
+            adExpiry = adData.adExpiry,
             adStatus = "proposed",
+            adURL = adData.adURL,
             rejectReason = null,
             publisher = targetAcctAnonymousParty,
             advertiser = myAccountAnonymousParty,
@@ -126,7 +123,7 @@ class ProposeAdvertisementFlow(
         // SHARE ACCOUNT AND SYNC KEYS
         val adInventoryStateQueryCriteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(adInventoryState.linearId))
         val adInventoryStateAndRef = serviceHub.vaultService.queryBy<AdInventoryState>(adInventoryStateQueryCriteria).states.single()
-        subFlow(ShareStateAndSyncAccounts(adInventoryStateAndRef, accountService.accountInfo(whereTo).single().state.data.host))
+        subFlow(ShareStateAndSyncAccounts(adInventoryStateAndRef, accountService.accountInfo(adData.publisher).single().state.data.host))
 
         return "Proposal send to " + targetAccount.host.name.organisation + "'s "+ targetAccount.name + " team with linerID " +
                 adInventoryState.linearId.toString()
@@ -164,3 +161,14 @@ class ProposeAdvertisementResponderFlow(val counterpartySession: FlowSession) : 
     }
 
 }
+
+@CordaSerializable
+data class ProposeAdvertisementData(
+    val advertiser: String,
+    val publisher: String,
+    val adType: String,
+    val adPlacement: String,
+    val adCost: Amount<Currency>,
+    val adExpiry: Date,
+    val adURL: String
+)

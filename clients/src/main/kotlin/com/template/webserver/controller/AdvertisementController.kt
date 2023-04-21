@@ -1,8 +1,7 @@
 package com.template.webserver
 
+import com.template.flows.*
 import com.template.flows.AcceptAdvertisementProposalFlow
-import com.template.flows.ProposeAdvertisementFlow
-import com.template.flows.GetActiveProposal
 import net.corda.core.contracts.Amount
 import net.corda.core.messaging.startFlow
 import org.slf4j.LoggerFactory
@@ -29,8 +28,17 @@ class AdvertisementController(nodeRPCConnection: NodeRPCConnection) {
         return try {
             val hundredDollars = Amount(100_000L, Currency.getInstance("USD"))
 
-            val flowHandle = proxy.startFlow(::ProposeAdvertisementFlow, adData.advertiser, adData.publisher,
-                adData.adType, adData.adPlacement, hundredDollars, Date())
+            val proposeAdvertisementData = ProposeAdvertisementData(
+                advertiser = adData.advertiser,
+                publisher = adData.publisher,
+                adType = adData.adType,
+                adPlacement = adData.adPlacement,
+                adCost = hundredDollars,
+                adExpiry = Date(),
+                adURL = adData.adURL
+            )
+
+            val flowHandle = proxy.startFlow(::ProposeAdvertisementFlow, proposeAdvertisementData)
             val result = flowHandle.returnValue.get()
             ResponseEntity.status(HttpStatus.CREATED).body("Successfully proposed advertisement with ID: $result")
         } catch (e: Exception) {
@@ -39,19 +47,31 @@ class AdvertisementController(nodeRPCConnection: NodeRPCConnection) {
         }
     }
 
-    @GetMapping("/accept")
-    fun acceptAdvertisement(@RequestParam publisher: String,
-                            @RequestParam advertiser: String,
-                            @RequestParam linearId: UUID
-    ): ResponseEntity<String> {
+    @PostMapping("/accept")
+    fun acceptAdvertisement(@RequestBody request: AcceptAdvertisementRequest): ResponseEntity<String> {
         return try {
 
-            val flowHandle = proxy.startFlow(::AcceptAdvertisementProposalFlow, publisher, advertiser, linearId)
+            val flowHandle = proxy.startFlow(::AcceptAdvertisementProposalFlow, request.publisher, request.advertiser,
+                request.linearId)
             val result = flowHandle.returnValue.get()
-            ResponseEntity.status(HttpStatus.CREATED).body("Successfully accepted advertisement with ID: $linearId")
+            ResponseEntity.status(HttpStatus.CREATED).body("Successfully accepted advertisement")
         } catch (e: Exception) {
             log.error("Error accepting advertisement", e)
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to accept advertisement: ${e.message}")
+        }
+    }
+
+    @PostMapping("/reject")
+    fun rejectAdvertisement(@RequestBody request: rejectAdvertisementRequest): ResponseEntity<String> {
+        return try {
+
+            val flowHandle = proxy.startFlow(::RejectAdvertisementProposalFlow, request.publisher, request.advertiser,
+                request.linearId, request.rejectReason)
+            val result = flowHandle.returnValue.get()
+            ResponseEntity.status(HttpStatus.CREATED).body("Successfully rejected advertisement")
+        } catch (e: Exception) {
+            log.error("Error rejecting advertisement", e)
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to reject advertisement: ${e.message}")
         }
     }
 
@@ -62,7 +82,7 @@ class AdvertisementController(nodeRPCConnection: NodeRPCConnection) {
             val result = flowHandle.returnValue.get()
             ResponseEntity.status(HttpStatus.OK).body(result)
         } catch (e: Exception) {
-            log.error("Error accepting advertisement", e)
+            log.error("Error showing advertisement", e)
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error")
         }
     }
@@ -75,5 +95,19 @@ data class AdData(
     val adType: String,
     val adPlacement: String,
     val adCost: String,
-    val adExpiry: String
+    val adExpiry: String,
+    val adURL: String
+)
+
+data class AcceptAdvertisementRequest(
+    val publisher: String,
+    val advertiser: String,
+    val linearId: UUID
+)
+
+data class rejectAdvertisementRequest(
+    val publisher: String,
+    val advertiser: String,
+    val linearId: UUID,
+    val rejectReason: String
 )

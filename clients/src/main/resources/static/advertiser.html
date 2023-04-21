@@ -13,7 +13,7 @@
     <!-- Custom Styles -->
   <style>
     body {
-      background-image: url('https://images7.alphacoders.com/109/1097466.jpg');
+      background-image: url('images/anthony-rosset-5r5554u-mHo-unsplash.jpg');
       background-size: cover;
       font-family: 'Roboto', sans-serif;
     }
@@ -46,22 +46,22 @@
 
     @keyframes blink {
         0% {
-            color: #FF6D60;
+            color: #B83228;
         }
         20% {
-            color: #F7D060;
+            color: #B98F20;
         }
         40% {
-            color: #F3E99F;
+            color: #B4B47C;
         }
         60% {
-            color: #98D8AA;
+            color: #48997A;
         }
         80% {
-            color: #FF6D60;
+            color: #B83228;
         }
         100% {
-            color: #98D8AA;
+            color: #48997A;
         }
     }
 
@@ -153,12 +153,20 @@
             mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'));
         });
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const accountNameTextField = document.querySelector('#adURL').parentElement;
+            mdc.textField.MDCTextField.attachTo(accountNameTextField);
+            mdc.ripple.MDCRipple.attachTo(document.querySelector('.mdc-button'));
+        });
+    </script>
 </head>
 
 <body>
 <div class="container">
   <div class="card">
-    <h1 class="welcome">Welcome to Crypto Arcade</h1>
+    <h1 class="welcome">Welcome Advertisers</h1>
     <h2 class="title">Propose Advertisement</h2>
     <form id="propose-ad-form" class="form">
       <div class="mdc-text-field mdc-text-field--outlined">
@@ -221,6 +229,16 @@
                         <span class="mdc-notched-outline__trailing"></span>
                     </span>
         </div>
+        <div class="mdc-text-field mdc-text-field--outlined" style="margin-top: 16px;">
+            <input type="text" id="adURL" class="mdc-text-field__input" required>
+            <span class="mdc-notched-outline">
+                        <span class="mdc-notched-outline__leading"></span>
+                        <span class="mdc-notched-outline__notch">
+                            <label for="adExpiry" class="mdc-floating-label">Ad URL</label>
+                        </span>
+                        <span class="mdc-notched-outline__trailing"></span>
+                    </span>
+        </div>
       <button id="proposeAdBtn" type="submit" class="mdc-button mdc-button--raised submit-btn">
         <span class="mdc-button__ripple"></span>
         <span class="mdc-button__label">Propose Advertisement</span>
@@ -259,6 +277,7 @@
         const adPlacement = document.getElementById('adPlacement').value;
         const adCost = document.getElementById('adCost').value;
         const adExpiry = document.getElementById('adExpiry').value;
+        const adURL = document.getElementById('adURL').value;
 
         // Create the AdData object
         const adData = {
@@ -267,7 +286,8 @@
             adType,
             adPlacement,
             adCost,
-            adExpiry
+            adExpiry,
+            adURL
         };
 
         // Call the /propose API with a POST request

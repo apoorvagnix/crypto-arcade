@@ -19,6 +19,7 @@ data class AdInventoryState(
     private val adCost: Amount<Currency>,
     private val adExpiry: Date?,
     private val adStatus: String,
+    private val adURL: String,
     private val rejectReason: String?,
     val publisher: AnonymousParty,
     val advertiser: AnonymousParty,
@@ -32,6 +33,7 @@ data class AdInventoryState(
                 adCost: Amount<Currency>,
                 adExpiry: Date?,
                 adStatus: String,
+                adURL: String,
                 rejectReason: String?,
                 publisher: AnonymousParty,
                 advertiser: AnonymousParty
@@ -41,6 +43,7 @@ data class AdInventoryState(
         adCost,
         adExpiry,
         adStatus,
+        adURL,
         rejectReason,
         publisher,
         advertiser,
@@ -53,6 +56,16 @@ data class AdInventoryState(
     fun getCost() : Amount<Currency> = adCost
 
     fun getAdType() : String = adType
+
+    fun getAdURL() : String = adURL
+
+    fun getAdPlacement() : String = adPlacement
+
+    fun getRejectReason() : String? = rejectReason
+
+    fun getAdExpiry() : Date? = adExpiry
+
+    fun getAdCost() : Amount<Currency> = adCost
 
     fun getLinerId() : UniqueIdentifier = linearId
 }

@@ -8,6 +8,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/material-components-web/4.0.0/material-components-web.min.js"></script>
     <style>
         body {
+            background-image: url('images/carl-raw-m3hn2Kn5Bns-unsplash.jpg');
+            background-size: cover;
             font-family: "Roboto", sans-serif;
             display: flex;
             justify-content: center;
@@ -26,7 +28,7 @@
         .welcome {
             text-align: center;
             font-weight: bold;
-            color: #6DA9E4;
+            color: #9C27B0 ;
             margin-top: 0;
         }
         .mdc-text-field {
@@ -35,6 +37,11 @@
         .submit-btn {
             width: 100%;
             margin-top: 16px;
+        }
+        .transparent-form {
+            background-color: rgba(255, 255, 255, 0.8); /* Adjust the last value (0.8) to change transparency */
+            padding: 20px; /* Add some padding to the form for better appearance */
+            border-radius: 10px; /* Optional: Add rounded corners to the form */
         }
     </style>
     <script>
@@ -51,7 +58,7 @@
 </head>
 <body>
 
-<div class="form">
+<div class="form transparent-form">
     <h1 class="welcome" style="font-size: 50px">Welcome to Crypto Arcade</h1>
 
     <h2 class="welcome" style="font-size: 30px; margin-bottom: 16px;">Create Accounts</h2>
