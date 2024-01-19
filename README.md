@@ -1,10 +1,18 @@
-<p align="center">
-  <img src="https://assets-global.website-files.com/60118ca1c2eab61d24bcf151/62f2829c615e2b59c7e3879e_Full.png" alt="Corda" width="500">
-</p>
+<img width="400" alt="image" src="https://github.com/apoorvagnix/crypto-arcade/assets/124659748/d3638ad2-ac8a-4573-a856-dccd1678a3dd">
 
 # Crypto Arcade - Kotlin
 
 Welcome to the In-Game Advertising Marketplace, where you can buy spaces within the game to advertise
+
+# Onboarding Page
+<img width="1267" alt="image" src="https://github.com/apoorvagnix/crypto-arcade/assets/124659748/14e58c92-649f-46ce-b246-00e529abfeb2">
+
+# View and Manage Propsals for Game Developers
+<img width="1264" alt="image" src="https://github.com/apoorvagnix/crypto-arcade/assets/124659748/fe6397a9-32d3-4186-9c56-8831b91b4f40">
+
+# Propose advertisment for Advertisers
+<img width="1211" alt="image" src="https://github.com/apoorvagnix/crypto-arcade/assets/124659748/75ce149b-801d-4130-bc12-e6f8279e0aad">
+
 
 # Steps to run the project
 
